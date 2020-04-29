@@ -1,0 +1,14 @@
+{
+  "name": "googlemeettimer-server",
+  "version": "1.0.0",
+  "description": "Backend for GoogleMeetTimer plugin",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Piervito Creanza",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
