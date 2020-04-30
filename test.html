@@ -1,0 +1,15 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<button onclick="sendUpdate()">Send update</button>
+<script>
+  const socket = io.connect('http://localhost:3000');
+  socket.on('connect', () => {
+    socket.emit('meet_id', {id:'foq-wovj-wez'});
+});  
+  socket.on('update_time', (newTime) => {
+    console.log('received new time', newTime)
+  });
+
+  function sendUpdate() {
+    socket.emit('sync_time', {id:'foq-wovj-wez', endTime: 12345678999})
+  }
+</script>
