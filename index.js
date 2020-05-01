@@ -1,4 +1,12 @@
-const io = require('socket.io')(3000); // Set socket.io to listen on port 3000
+const app = require('express')();
+const server = require('http').Server(app);
+const io = require('socket.io')(server); 
+
+server.listen(3000); // Set socket.io to listen on port 3000
+
+app.get('/', (req, res) => {
+    res.send('timer api online')
+  });
 
 var db = {} // Declare the object that we will use as db
 
@@ -14,6 +22,7 @@ io.on('connection', (socket) => {
   
     socket.on('new_meet', ({id}) => {
         if (id) {
+            console.log('new id:', id)
             socket.join(id) // Join or create the room with that id
             if (db[id]) {
                 socket.emit('update_time', db[id]) // If the timer has already started, send the time to the new client
