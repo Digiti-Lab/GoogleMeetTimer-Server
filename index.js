@@ -22,7 +22,6 @@ io.on('connection', (socket) => {
   
     socket.on('new_meet', ({id}) => {
         if (id) {
-            console.log('new id:', id)
             socket.join(id) // Join or create the room with that id
             if (db[id]) {
                 socket.emit('update_time', db[id]) // If the timer has already started, send the time to the new client
