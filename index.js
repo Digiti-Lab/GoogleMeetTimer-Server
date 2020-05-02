@@ -1,16 +1,26 @@
 const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server); 
+const iopm2 = require('@pm2/io');
 
 server.listen(3000); // Set socket.io to listen on port 3000
 
+var currentUsers = 0 // For statistical uses we take trace of the number of users
+const realtimeUsers = iopm2.metric({ // pm2 module to pass the variable to pm2 monit
+    name: 'Realtime Users',
+    id: 'app/realtime/users'
+})
+
+setInterval(() => realtimeUsers.set(currentUsers), 5000) // Update the realtimeUser variable every 5 secs
+
 app.get('/', (req, res) => {
     res.send('timer api online')
-  });
+});
 
 var db = {} // Declare the object that we will use as db
 
-io.on('connection', (socket) => {    
+io.on('connection', (socket) => {
+    currentUsers += 1
     socket.on('sync_time', ({id, endTime}) => {
         if (id && endTime) { 
             db[id] = endTime // Store the endTime in the db
@@ -32,6 +42,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnecting', () => {
+        currentUsers -= 1
         let room = Object.keys(socket.rooms)[1] // Get the second room in which the client is (The first one corresponds to the client itself)
         io.in(room).clients((err , clients) => { // Get all the clients in that room
             if (!err) {
