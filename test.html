@@ -1,15 +1,27 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
 <button onclick="sendUpdate()">Send update</button>
+<button onclick="sendTest()">Test</button>
 <script>
-  const socket = io.connect('http://localhost:3000');
+  const socket = io.connect('https://timer.digitilab.it/', {transports: ['websocket']});
   socket.on('connect', () => {
+    console.log('ok')
     socket.emit('meet_id', {id:'foq-wovj-wez'});
 });  
   socket.on('update_time', (newTime) => {
     console.log('received new time', newTime)
   });
 
+  socket.on('error', (error) => {
+    console.log('error:', error)
+  })
+  socket.on('connect_error', (error) => {
+    console.log('conn error:', error)
+  })
+
   function sendUpdate() {
     socket.emit('sync_time', {id:'foq-wovj-wez', endTime: 12345678999})
+  }
+  function sendTest() {
+    socket.emit('test')
   }
 </script>
