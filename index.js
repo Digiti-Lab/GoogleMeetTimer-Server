@@ -21,20 +21,22 @@ var db = {} // Declare the object that we will use as db
 
 io.on('connection', (socket) => {
     currentUsers += 1
-    socket.on('sync_time', ({id, endTime, senderName}) => {
-        if (id && endTime && senderUser) { 
+    socket.on('sync_time', ({id, endTime, senderName, userImage}) => {
+        if (id && endTime) {             
             db[id] = endTime // Store the endTime in the db
-            socket.to(id).emit('update_time', {endTime, senderUser}) // Update the time on every client in the room but the sender
+            socket.to(id).emit('update_time', {endTime, senderName, userImage}) // Update the time on every client in the room but the sender
         } else {
             socket.emit('client_error', new Error('Missing id or endTime parameter')); // Send error to the sender
         }
     })
   
-    socket.on('new_meet', ({id}) => {
+    socket.on('new_meet', ({id, endTime}) => {
         if (id) {
             socket.join(id) // Join or create the room with that id
             if (db[id]) {
-                socket.emit('update_time', db[id]) // If the timer has already started, send the time to the new client
+                socket.emit('update_time', {endTime: db[id]}) // If the timer has already started, send the time to the new client
+            } else if (endTime) {
+                db[id] = endTime // Store the endTime in the db
             }
         } else {
             socket.emit('client_error', new Error('Missing id parameter')); // Send error to the sender
