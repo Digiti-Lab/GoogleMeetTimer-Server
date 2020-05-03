@@ -21,10 +21,10 @@ var db = {} // Declare the object that we will use as db
 
 io.on('connection', (socket) => {
     currentUsers += 1
-    socket.on('sync_time', ({id, endTime}) => {
-        if (id && endTime) { 
+    socket.on('sync_time', ({id, endTime, senderUser}) => {
+        if (id && endTime && senderUser) { 
             db[id] = endTime // Store the endTime in the db
-            socket.to(id).emit('update_time', endTime) // Update the time on every client in the room but the sender
+            socket.to(id).emit('update_time', {endTime, senderUser}) // Update the time on every client in the room but the sender
         } else {
             socket.emit('client_error', new Error('Missing id or endTime parameter')); // Send error to the sender
         }
