@@ -21,7 +21,7 @@ var db = {} // Declare the object that we will use as db
 
 io.on('connection', (socket) => {
     currentUsers += 1
-    socket.on('sync_time', ({id, endTime, senderUser}) => {
+    socket.on('sync_time', ({id, endTime, senderName}) => {
         if (id && endTime && senderUser) { 
             db[id] = endTime // Store the endTime in the db
             socket.to(id).emit('update_time', {endTime, senderUser}) // Update the time on every client in the room but the sender
