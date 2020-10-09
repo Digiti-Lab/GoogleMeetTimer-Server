@@ -11,7 +11,15 @@ const realtimeUsers = iopm2.metric({ // pm2 module to pass the variable to pm2 m
     id: 'app/realtime/users'
 })
 
-setInterval(() => realtimeUsers.set(currentUsers), 5000) // Update the realtimeUser variable every 5 secs
+const maxRealtimeUsers = iopm2.metric({ // pm2 module to pass the variable to pm2 monit
+    name: 'Record Users number',
+    id: 'app/realtime/maxusers'
+})
+
+setInterval(() => { // Update the realtimeUser variable every 5 secs
+    realtimeUsers.set(currentUsers)
+    if (maxRealtimeUsers < currentUsers) {maxRealtimeUsers.set(currentUsers)}
+    }, 5000)
 
 app.get('/', (req, res) => {
     res.send('timer api online')
@@ -21,22 +29,22 @@ var db = {} // Declare the object that we will use as db
 
 io.on('connection', (socket) => {
     currentUsers += 1
-    socket.on('sync_time', ({id, endTime, senderName, userImage}) => {
+    socket.on('sync_time', ({id, endTime, senderName, userImage, seconds}) => {
         if (id && endTime) {             
-            db[id] = endTime // Store the endTime in the db
-            socket.to(id).emit('update_time', {endTime, senderName, userImage}) // Update the time on every client in the room but the sender
+            db[id] = {endTime, seconds} // Store endTime and seconds in the db
+            socket.to(id).emit('update_time', {endTime, senderName, userImage, seconds}) // Update the time on every client in the room but the sender
         } else {
             socket.emit('client_error', new Error('Missing id or endTime parameter')); // Send error to the sender
         }
     })
   
-    socket.on('new_meet', ({id, endTime}) => {
+    socket.on('new_meet', ({id, endTime, seconds}) => {
         if (id) {
             socket.join(id) // Join or create the room with that id
             if (db[id]) {
-                socket.emit('update_time', {endTime: db[id]}) // If the timer has already started, send the time to the new client
+                socket.emit('update_time', {endTime: db[id].endTime, seconds: db[id].seconds}) // If the timer has already started, send the time to the new client
             } else if (endTime) {
-                db[id] = endTime // Store the endTime in the db
+                db[id] = {endTime, seconds} // Store endTime and seconds in the db
             }
         } else {
             socket.emit('client_error', new Error('Missing id parameter')); // Send error to the sender
