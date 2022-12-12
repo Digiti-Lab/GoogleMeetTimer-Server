@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@pm2/io": "^4.3.5",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "socket.io": "^2.3.0"
   }
 }
